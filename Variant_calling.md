@@ -215,7 +215,45 @@ gatk --java-options "-Xmx20g" MarkDuplicates \
 
 samtools index -c "${OUTPUT_PREFIX}_dedup.bam"
 ```
-## 4. Admixture analysis with NGSadmix from genotype likelihoods dataset. Tested K values from 2 to 10.
+## 4. Obtain genotype likelihoods with ANGSD.
+`Slurm script for NGSadmix`
+```
+#!/bin/bash -e
+#SBATCH --cpus-per-task  16
+#SBATCH --job-name       glsangsd
+#SBATCH --mem            60G
+#SBATCH --time           3-00:00:00
+#SBATCH --account        uoa02626
+#SBATCH --output         %x_%A_%a.out
+#SBATCH --error          %x_%A_%a.err
+#SBATCH --hint           nomultithread
+module purge
+module load angsd/0.935-GCC-9.2.0
+
+REF="/nesi/nobackup/uoa02626/SRW_Sebastian/WGS_SRW/RWref_HiC.fasta"
+
+angsd -bam srw_wgs_samples.bamlist -P ${SLURM_CPUS_PER_TASK} \
+    -GL 2 -doMajorMinor 1 -minMapQ 30 -minQ 30 \
+    -doMaf 1 \
+    -SNP_pval 1e-6  \
+    -doIBS 1 \
+    -minind 2 \
+    -dumpCounts 2 \
+    -doGeno 4 \
+    -doPost 1 \
+    -doDepth 1 \
+    -doCounts 1 \
+    -doGlf 2 \
+    -uniqueonly 1 \
+    -remove_bads 1 \
+    -C 50 \
+    -baq 1 \
+    -makeMatrix 1 \
+    -doCov 1 \
+    -ref $REF
+    -out srw_con_allsamples
+```
+## 5. Admixture analysis with NGSadmix from genotype likelihoods dataset. Tested K values from 2 to 10.
 `Slurm script for NGSadmix`
 ```
 #!/bin/bash -e
@@ -261,7 +299,7 @@ for K in {2..10}; do
     done
 done
 ```
-## 5. PCAs using genotype likelihoods datasets. We performed a PCA using all Māui and Hector's individuals and a PCA using just Hector's dataset.
+## 6. PCAs using genotype likelihoods datasets. We performed a PCA using all Māui and Hector's individuals and a PCA using just Hector's dataset.
 `Slurm script for PCAngsd`
 ```
 #!/bin/bash -e
@@ -287,7 +325,7 @@ pcangsd -b nrlt_alldol_angsd_gl.beagle.gz \
    -o nrlt_pca \
    -t ${SLURM_CPUS_PER_TASK}
 ```
-## 6. Admixture result evaluation using EvalAdmix.
+## 7. Admixture result evaluation using EvalAdmix.
 `Slurm script for evalAdmix`
 ```
 #!/bin/bash -e
