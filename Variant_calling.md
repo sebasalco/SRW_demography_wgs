@@ -271,8 +271,8 @@ module purge
 module load angsd/0.935-GCC-9.2.0
 
 # Define variables
-BEAGLE_FILE="nrlt_alldol_angsd_gl.beagle.gz"
-OUT_PREFIX="nrlt_alldol_ngsAdmix_run"
+BEAGLE_FILE="srw_con_allsamples_angsd_gl.beagle.gz"
+OUT_PREFIX="srw_con_allsamples_ngsAdmix_run"
 THREADS=${SLURM_CPUS_PER_TASK}
 MIN_MAF=0.1                  # Minimum MAF
 MIS_TOL=0.8                  # Tolerance for high-quality genotypes
@@ -318,7 +318,7 @@ module load angsd/0.935-GCC-9.2.0
 
 conda activate myenv #Python environment where pcangsd was installed
 
-pcangsd -b nrlt_alldol_angsd_gl.beagle.gz \
+pcangsd -b srw_con_allsamples_angsd_gl.beagle.gz \
    --maf 0.1 \
    --tree \
    --inbreed_samples \
@@ -342,9 +342,9 @@ pcangsd -b nrlt_alldol_angsd_gl.beagle.gz \
 module purge
 module load angsd/0.935-GCC-9.2.0
 
-./evalAdmix -beagle nrlt_alldol_angsd_gl.beagle.gz \
-     -fname nrlt_alldol_ngsAdmix_run_K6.fopt.gz \
-     -qname nrlt_alldol_ngsAdmix_run_K6.qopt \
+./evalAdmix -beagle srw_con_allsamples_angsd_gl.beagle.gz \
+     -fname srw_con_allsamples_ngsAdmix_run_K6.fopt.gz \
+     -qname srw_con_allsamples_ngsAdmix_run_K6.qopt \
      -P ${SLURM_CPUS_PER_TASK} \
-     -o nrlt_ngsAdmix_alldol.corres.txt
+     -o srw_con_allsamples_evaladmix.corres.txt
 ```
