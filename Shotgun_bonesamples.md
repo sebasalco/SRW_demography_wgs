@@ -1,7 +1,16 @@
 # Bone samples shotgun processing. Prepare barcodes for each samples in a barcodes.txt file
 ---
-## 1. Demultiplex 
-`Slurm script for stacks`
+## 1. Demultiplex
+`Barcodes txt file example`
+```
+AGCTTCATCT      GCATATGTGT      EBL003
+GGATCTATCT      TGACTCGTGT      EBL024
+AGCTTCATCT      ATGCGAGTGT      EBL028
+TAGACGATCT      GCATATGTGT      M18918
+GGATCTATCT      ATGCGAGTGT      M24018
+AGCTTCATCT      TGACTCGTGT      M5653
+```
+`Slurm script for stacks demultiplexing`
 ```
 #!/bin/bash -e
 #SBATCH --cpus-per-task  16
@@ -19,48 +28,64 @@ process_shortreads -1 forward_L2.fastq.gz -2 reverse_L2.fastq.gz \
                 -c -q
 
 ```
-## 2. FASTQC quality control.
-`Slurm script for fastqc`
+## 2. Remove barcodes and adapters and perform FASTQC analysis with TrimGalore
 ```
 #!/bin/bash -e
-#SBATCH --cpus-per-task  8
-#SBATCH --job-name       fastqc
+
+#SBATCH --cpus-per-task  16
+#SBATCH --job-name       qctrimg
 #SBATCH --mem            20G
 #SBATCH --time           24:00:00
 #SBATCH --account        uoa02626
 #SBATCH --output         %x_%j.out
 #SBATCH --error          %x_%j.err
-
-# Load FastQC module
-module load FastQC/0.11.9
-
-# Create output directory
-mkdir -p fastqc_results
-
-# Run FastQC on all .fq.gz files
-fastqc -t 8 -o fastqc_results *.fq.gz
-```
-## 2. Remove barcodes and adapters with cutadapts.
-`Slurm script for fastqc`
-```
-#!/bin/bash -e
-#SBATCH --cpus-per-task  16
-#SBATCH --job-name       tcutadpt
-#SBATCH --mem            50G
-#SBATCH --time           24:00:00
-#SBATCH --account        uoa02626
-#SBATCH --output         %x_%j.out
-#SBATCH --error          %x_%j.err
+#SBATCH --array          1-6
 
 module purge
+module load TrimGalore/0.6.10-gimkl-2022a-Python-3.11.3-Perl-5.34.1
 
-module load cutadapt/4.4-gimkl-2022a-Python-3.11.3
+# Define the array of input files
+declare -a FQ_FILES1=(
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/EBL003.1.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/EBL024.1.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/EBL028.1.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/M18918.1.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/M24018.1.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/M5653.1.fq.gz"
+)
 
-for sample in EBL003 EBL024 EBL028 M18918 M24018 M5653; do
-    cutadapt -a AGATCGGAAGAGC -A AGATCGGAAGAGC \
-        -o trimmed_${sample}.1.fq.gz -p trimmed_${sample}.2.fq.gz \
-        ${sample}.1.fq.gz ${sample}.2.fq.gz
-done
+declare -a FQ_FILES2=(
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/EBL003.2.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/EBL024.2.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/EBL028.2.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/M18918.2.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/M24018.2.fq.gz"
+"/nesi/nobackup/uoa02626/SRW_Sebastian/Shotgun/M5653.2.fq.gz"
+)
+
+declare -a OUTPUT_PREFIXES=(
+  "EBL003"
+  "EBL024"
+  "EBL028"
+  "M18918"
+  "M24018"
+  "M5653"
+)
+
+# Get the index for the current array job
+INDEX=$((SLURM_ARRAY_TASK_ID - 1))
+
+# Get the corresponding input files and output prefix
+FQ1=${FQ_FILES1[$INDEX]}
+FQ2=${FQ_FILES2[$INDEX]}
+OUTPUT_PREFIX=${OUTPUT_PREFIXES[$INDEX]}
+
+# Ensure output directory exists
+
+# Run Trim Galore
+trim_galore -q 20 -j 16 --fastqc --paired \
+    -o ./ --basename ${OUTPUT_PREFIX} \
+    ${FQ1} ${FQ2}
 ```
 ## 3. Mapping to ref genome or mitogenome to extract mitochondrial sequences or nuclear sequences.
 `Slurm script for bwa`
