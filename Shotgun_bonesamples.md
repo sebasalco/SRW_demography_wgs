@@ -152,3 +152,47 @@ samtools sort -o "${OUTPUT_PREFIX}.sorted.bam" -
 samtools index -c "${OUTPUT_PREFIX}.sorted.bam"
 
 ```
+## 4. Generate consensus mitogenome sequence for each sample using SAMtools.
+`Slurm script for SAMtools`
+```
+#!/bin/bash -e
+
+#SBATCH --cpus-per-task  4
+#SBATCH --job-name       mitocons
+#SBATCH --mem            10
+#SBATCH --time           4:00:00
+#SBATCH --account        uoa02626
+#SBATCH --output         %x_%j.out
+#SBATCH --error          %x_%j.err
+#SBATCH --array          1-6
+
+module purge
+module load SAMtools/1.19-GCC-12.3.0
+
+declare -a BAM_FILES=(
+  "mito_EBL003.bam"
+  "mito_EBL028.bam"
+  "mito_M24018.bam"
+  "mito_EBL024.bam" 
+  "mito_M18918.bam"
+  "mito_M5653.bam"
+)
+
+declare -a OUTPUT_PREFIXES=(
+  "mito_EBL003.fasta"
+  "mito_EBL028.fasta"
+  "mito_M24018.fasta"
+  "mito_EBL024.fasta"
+  "mito_M18918.fasta"
+  "mito_M5653.fasta"
+)
+
+# Get the index for the current array job
+INDEX=$((SLURM_ARRAY_TASK_ID - 1))
+
+# Get the corresponding input files and output prefix
+BAM=${BAM_FILES1[$INDEX]}
+OUTPUT_PREFIX=${OUTPUT_PREFIXES[$INDEX]}
+
+samtools consensus -f fasta -o $OUTPUT_PREFIX $REF $BAM
+```
