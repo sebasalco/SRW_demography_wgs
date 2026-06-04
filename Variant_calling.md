@@ -239,7 +239,7 @@ angsd -bam srw_wgs_samples.bamlist -P ${SLURM_CPUS_PER_TASK} \
     -doIBS 1 \
     -minind 2 \
     -dumpCounts 2 \
-    -doGeno 4 \
+    -doGeno 3 \
     -doPost 1 \
     -doDepth 1 \
     -doCounts 1 \
