@@ -169,6 +169,8 @@ samtools index -c "${OUTPUT_PREFIX}.sorted.bam"
 module purge
 module load SAMtools/1.19-GCC-12.3.0
 
+REF="/nesi/nobackup/uoa02626/SRW_Sebastian/Euau_mitogenome.fasta"
+
 declare -a BAM_FILES=(
   "mito_EBL003.bam"
   "mito_EBL028.bam"
