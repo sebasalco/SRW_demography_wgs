@@ -299,7 +299,7 @@ for K in {2..10}; do
     done
 done
 ```
-## 6. PCAs using genotype likelihoods datasets. We performed a PCA using all Māui and Hector's individuals and a PCA using just Hector's dataset.
+## 6. PCAs using genotype likelihoods datasets.
 `Slurm script for PCAngsd`
 ```
 #!/bin/bash -e
