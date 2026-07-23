@@ -1,8 +1,10 @@
 # Runs of homozygosity and Genome wide heteroygosity analyzis from a VCF file after filtering and preprocessing with VCFtools and BCFtools.
 ---
 ## 1. VCF file rehead, annotate and filter
-`module load BCFtools/1.22-GCC-12.3.0
+```
+module load BCFtools/1.22-GCC-12.3.0
 module load VCFtools/0.1.17-GCC-12.3.0-Perl-5.38.2
+
 #Reformat vcf file
 bcftools view \
     -e 'GT="."' \
@@ -11,11 +13,13 @@ bcftools view \
     -Oz \
     -o ALL_srw_outfile.fil.vcf.gz \
     NEW_fil_SRW_highc.vcf.gz
+
 bcftools annotate \
     --header-line '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">' \
     -Oz \
     -o ALL_fixed_header.vcf.gz \
     ALL_srw_outfile.fil.vcf.gz
+
 #Filter MAF, missing data and keep only biallelic snps
 vcftools --vcf ALL_fixed_header.vcf.gz \
    --recode-INFO-all \
@@ -26,7 +30,8 @@ vcftools --vcf ALL_fixed_header.vcf.gz \
    --max-missing 0.9 \
    --out ALLW_filtered \
    --recode \
-   --remove-indels`
+   --remove-indels
+```
 ## 2. ROH analysis using bcftools roh (best when variable coverage across samples)
 `Slurm script for bcftools roh`
 ```                                                                                             
